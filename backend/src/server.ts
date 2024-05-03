@@ -3,9 +3,9 @@ import cors from 'cors';
 import authRouter from './routes/auth.router';
 import authenticate from './middlewares/authenticate.middleware';
 import userRouter from './routes/user.router';
-import guildRouter from './routes/guild.router';
+import guildRouter from './routes/group.router';
 import messageRouter from './routes/message.router';
-import guildRequestRouter from './routes/guildRequest.router';
+import guildRequestRouter from './routes/groupRequest.router';
 import createSocketServer from './socketio/socketServer';
 import socketEvents from './socketio/socketEvents';
 import cookieParser from 'cookie-parser'

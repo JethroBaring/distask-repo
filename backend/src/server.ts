@@ -4,7 +4,6 @@ import authRouter from './routes/auth.router';
 import authenticate from './middlewares/authenticate.middleware';
 import userRouter from './routes/user.router';
 import guildRouter from './routes/guild.router';
-import channelRouter from './routes/channel.router';
 import messageRouter from './routes/message.router';
 import guildRequestRouter from './routes/guildRequest.router';
 import createSocketServer from './socketio/socketServer';
@@ -22,7 +21,6 @@ app.use(authenticate);
 app.use('/', userRouter);
 app.use('/', guildRouter);
 app.use('/', messageRouter);
-app.use('/', channelRouter)
 app.use('/', guildRequestRouter)
 
 socketEvents(io)

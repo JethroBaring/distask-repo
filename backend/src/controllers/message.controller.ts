@@ -8,7 +8,7 @@ const createMessage = async (req: Request, res: Response) => {
       data: {
         content: data.content,
         userId: data.userId,
-        channelId: data.channelId,
+        groupId: data.groupId,
       },
       select: {
         id: true,
@@ -20,16 +20,7 @@ const createMessage = async (req: Request, res: Response) => {
             email: true,
             groupMembership: {
               where: {
-                groupId: (
-                  await prisma.channel.findUnique({
-                    where: {
-                      id: Number.parseInt(data.channelId),
-                    },
-                    select: {
-                      groupId: true,
-                    },
-                  })
-                ).groupId,
+                groupId: data.groupId
               },
               select: {
                 role: true,
@@ -50,12 +41,12 @@ const createMessage = async (req: Request, res: Response) => {
   }
 };
 
-const getMessagesByGuildChannel = async (req: Request, res: Response) => {
+const getMessagesByGuildId = async (req: Request, res: Response) => {
   try {
     const params = req.params;
     const messages = await prisma.message.findMany({
       where: {
-        channelId: Number.parseInt(params.channelId),
+        groupId: Number.parseInt(params.groupId),
       },
       select: {
         id: true,
@@ -88,4 +79,4 @@ const getMessagesByGuildChannel = async (req: Request, res: Response) => {
   }
 };
 
-export { createMessage, getMessagesByGuildChannel };
+export { createMessage, getMessagesByGuildId };

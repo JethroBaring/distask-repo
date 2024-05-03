@@ -2,10 +2,10 @@ import jwt from 'jsonwebtoken';
 
 const createToken = (id: number) => {
   return {
-    refresh: jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
+    refresh: jwt.sign({ id }, "distask", {
       expiresIn: '1d',
     }),
-    access: jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
+    access: jwt.sign({ id }, "distask", {
       expiresIn: '1h',
     }),
   };

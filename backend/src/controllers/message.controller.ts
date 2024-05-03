@@ -18,7 +18,7 @@ const createMessage = async (req: Request, res: Response) => {
           select: {
             id: true,
             email: true,
-            guildMembership: {
+            groupMembership: {
               where: {
                 groupId: (
                   await prisma.channel.findUnique({
@@ -65,7 +65,7 @@ const getMessagesByGuildChannel = async (req: Request, res: Response) => {
           select: {
             id: true,
             email: true,
-            guildMembership: {
+            groupMembership: {
               where: {
                 groupId: Number.parseInt(params.guildId),
               },

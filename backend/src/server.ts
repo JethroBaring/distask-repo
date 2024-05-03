@@ -13,7 +13,6 @@ import cookieParser from 'cookie-parser'
 
 const app = express();
 const { io, server } = createSocketServer(app)
-
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser())
@@ -28,6 +27,6 @@ app.use('/', guildRequestRouter)
 
 socketEvents(io)
 
-server.listen(process.env.PORT, () => {
-  console.log(`listening on port ${process.env.PORT}`);
+server.listen(8000, () => {
+  console.log(`listening on port 8000`);
 });

@@ -42,7 +42,7 @@ const signup = async (req: Request, res: Response) => {
         data: {
           email: data.email,
           password: hashedPassword,
-          guildMembership: {
+          groupMembership: {
             create: [
               {
                 groupId: 1,
@@ -73,11 +73,11 @@ const signup = async (req: Request, res: Response) => {
 const refresh = async (req: Request, res: Response) => {
   try {
     const refresh = req.body.refresh;
-    const decoded = jwt.verify(refresh, process.env.JWT_SECRET_KEY) as {
+    const decoded = jwt.verify(refresh, "distask") as {
       id?: string;
     };
 
-    const access = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET_KEY, {
+    const access = jwt.sign({ id: decoded.id }, "distask", {
       expiresIn: '1h',
     });
 

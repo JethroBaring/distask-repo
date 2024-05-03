@@ -16,15 +16,15 @@ const authenticate = async (
   }
 
   try {
-    jwt.verify(token, process.env.JWT_SECRET_KEY);
+    jwt.verify(token, "distask");
     next();
   } catch (error) {
     const refresh = req.cookies.Refresh;
     try {
-      const decoded = jwt.verify(refresh, process.env.JWT_SECRET_KEY) as {
+      const decoded = jwt.verify(refresh, "distask") as {
         id?: number;
       };
-      const access = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET_KEY, {
+      const access = jwt.sign({ id: decoded.id }, "distask", {
         expiresIn: '1h',
       });
       return res.status(401).json({

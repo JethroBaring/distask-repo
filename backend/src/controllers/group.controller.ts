@@ -11,7 +11,7 @@ const createGuild = async (req: Request, res: Response) => {
       data: {
         name: data.name,
         creatorId: Number.parseInt(data.creator),
-        guildMembership: {
+        groupMembership: {
           create: [
             {
               userId: Number.parseInt(data.creator),

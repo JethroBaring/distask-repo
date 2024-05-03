@@ -9,7 +9,7 @@ const main = async () => {
     data: {
       email: 'admin@gmail.com',
       password: await bcrypt.hash('admin123', salt),
-      guild: {
+      group: {
         create: [
           {
             name: 'Alliance Of Light',

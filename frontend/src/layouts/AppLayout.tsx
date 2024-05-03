@@ -1,8 +1,11 @@
+import Landing from "../components/Landing";
+
 const AppLayout = () => {
+
     return (
-        <div>
-            Hello World
-        </div>
+        <>
+            <Landing />
+        </>
     )
 }
 

@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int                 @id @default(autoincrement())
+  email             String              @unique
+  password          String
+  createdAt         DateTime            @default(now())
+  profile           Profile?
+  group             Group[]
+  groupMembership   GroupMembership[]
+  message           Message[]
+  groupRequest      GroupRequest[]
+  channelPermission ChannelPermission[]
+}
+
+model Profile {
+  id        Int    @id @default(autoincrement())
+  bio       String
+  firstName String
+  lastName  String
+  user      User   @relation(fields: [userId], references: [id])
+  userId    Int    @unique
+}
+
+model Group {
+  id              Int               @id @default(autoincrement())
+  name            String
+  createdAt       DateTime          @default(now())
+  creator         User              @relation(fields: [creatorId], references: [id])
+  creatorId       Int
+  groupMembership GroupMembership[]
+  groupRequest    GroupRequest[]
+  channel         Channel[]
+}
+
+model GroupMembership {
+  user     User    @relation(fields: [userId], references: [id])
+  userId   Int
+  group    Group   @relation(fields: [groupId], references: [id])
+  groupId  Int
+  role     Role    @default(MEMBER)
+  nickname String?
+
+  @@id([userId, groupId])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  channel   Channel  @relation(fields: [channelId], references: [id])
+  channelId Int
+}
+
+model GroupRequest {
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int
+  group   Group  @relation(fields: [groupId], references: [id])
+  groupId Int
+  status  Status @default(PENDING)
+
+  @@id([userId, groupId])
+}
+
+model Channel {
+  id                Int                 @id @default(autoincrement())
+  group             Group               @relation(fields: [groupId], references: [id])
+  groupId           Int
+  name              String
+  messages          Message[]
+  channelPermission ChannelPermission[]
+}
+
+model ChannelPermission {
+  user       User       @relation(fields: [userId], references: [id])
+  userId     Int
+  channel    Channel    @relation(fields: [channelId], references: [id])
+  channelId  Int
+  permission Permission @default(READ_ONLY)
+
+  @@id([userId, channelId])
+}
+
+enum Role {
+  CREATOR
+  MEMBER
+}
+
+enum Permission {
+  READ_ONLY
+  READ_WRITE
+  RESTRICTED_ACCESS
+}
+
+enum Status {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

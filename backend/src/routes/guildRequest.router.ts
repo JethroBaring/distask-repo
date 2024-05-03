@@ -1,8 +1,8 @@
-import { getRequestByGuild } from '../controllers/guildRequest.controller';
+import { getRequestByGroup } from '../controllers/guildRequest.controller';
 import { Router } from 'express';
 
 const guildRequestRouter: Router = Router();
 
-guildRequestRouter.get('/guild/requests/:id', getRequestByGuild);
+guildRequestRouter.get('/group/requests/:id', getRequestByGroup);
 
 export default guildRequestRouter;

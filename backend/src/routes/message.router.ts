@@ -4,6 +4,6 @@ import { createMessage, getMessagesByGuildChannel } from "../controllers/message
 const messageRouter:Router = Router()
 
 messageRouter.post('/message',createMessage)
-messageRouter.get('/messages/:guildId/:channelId', getMessagesByGuildChannel)
+messageRouter.get('/messages/:groupId/:channelId', getMessagesByGuildChannel)
 
 export default messageRouter

@@ -2,7 +2,7 @@ import prisma from '../utils/db';
 import { Request, Response } from 'express';
 import { Status } from '@prisma/client';
 
-const getRequestByGuild = async (req: Request, res: Response) => {
+const getRequestByGroup = async (req: Request, res: Response) => {
   try {
     const params = req.params;
     const requests = await prisma.groupRequest.findMany({
@@ -28,4 +28,4 @@ const getRequestByGuild = async (req: Request, res: Response) => {
   }
 };
 
-export { getRequestByGuild }
+export { getRequestByGroup }

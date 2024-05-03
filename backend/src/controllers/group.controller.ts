@@ -2,7 +2,7 @@ import { Permission, Role, Status } from '@prisma/client';
 import prisma from '../utils/db';
 import { Request, Response } from 'express';
 
-const createGuild = async (req: Request, res: Response) => {
+const createGroup = async (req: Request, res: Response) => {
   try {
     const data = req.body;
     console.log(data);
@@ -48,7 +48,7 @@ const createGuild = async (req: Request, res: Response) => {
   }
 };
 
-const getGuildsByUser = async (req: Request, res: Response) => {
+const getGroupsByUser = async (req: Request, res: Response) => {
   try {
     const params = req.params;
     const worlds = await prisma.groupMembership.findMany({
@@ -75,7 +75,7 @@ const getGuildsByUser = async (req: Request, res: Response) => {
   } catch (error) {}
 };
 
-const getGuildById = async (req: Request, res: Response) => {
+const getGroupById = async (req: Request, res: Response) => {
   try {
     const params = req.params;
     const world = await prisma.group.findUnique({
@@ -90,7 +90,7 @@ const getGuildById = async (req: Request, res: Response) => {
   } catch (error) {}
 };
 
-const joinGuild = async (req: Request, res: Response) => {
+const joinGroup = async (req: Request, res: Response) => {
   try {
     const data = req.body;
 
@@ -110,7 +110,7 @@ const joinGuild = async (req: Request, res: Response) => {
   } catch (error) {}
 };
 
-const acceptGuildRequest = async (req: Request, res: Response) => {
+const acceptGroupRequest = async (req: Request, res: Response) => {
   try {
     const { userId, groupId } = req.body as { userId: number; groupId: number };
 
@@ -143,7 +143,7 @@ const acceptGuildRequest = async (req: Request, res: Response) => {
   } catch (error) {}
 };
 
-const rejectGuildRequest = async (req: Request, res: Response) => {
+const rejectGroupRequest = async (req: Request, res: Response) => {
   try {
     const { userId, groupId } = req.body as { userId: number; groupId: number };
 
@@ -165,10 +165,10 @@ const rejectGuildRequest = async (req: Request, res: Response) => {
 };
 
 export {
-  createGuild,
-  getGuildsByUser,
-  getGuildById,
-  joinGuild,
-  acceptGuildRequest,
-  rejectGuildRequest,
+  createGroup,
+  getGroupsByUser,
+  getGroupById,
+  joinGroup,
+  acceptGroupRequest,
+  rejectGroupRequest,
 };

@@ -1,20 +1,20 @@
 import { Router } from 'express';
 import {
-  getGuildsByUser,
-  getGuildById,
-  createGuild,
-  joinGuild,
-  acceptGuildRequest,
-  rejectGuildRequest,
+  getGroupsByUser,
+  getGroupById,
+  createGroup,
+  joinGroup,
+  acceptGroupRequest,
+  rejectGroupRequest,
 } from '../controllers/group.controller';
 
 const worldRouter: Router = Router();
 
-worldRouter.get('/guilds/:id', getGuildsByUser);
-worldRouter.get('/guild/:id', getGuildById);
-worldRouter.post('/guild/create', createGuild);
-worldRouter.post('/guild/join', joinGuild);
-worldRouter.post('/guild/accept', acceptGuildRequest);
-worldRouter.post('/guild/reject', rejectGuildRequest);
+worldRouter.get('/groups/:id', getGroupsByUser);
+worldRouter.get('/group/:id', getGroupById);
+worldRouter.post('/group/create', createGroup);
+worldRouter.post('/group/join', joinGroup);
+worldRouter.post('/group/accept', acceptGroupRequest);
+worldRouter.post('/group/reject', rejectGroupRequest);
 
 export default worldRouter;

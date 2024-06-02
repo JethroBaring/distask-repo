@@ -38,6 +38,9 @@ const getTasksByGroupId = async (req: Request, res: Response) => {
         where: {
           groupId: Number.parseInt(data.groupId),
         },
+        include: {
+          user: true
+        }
       });
 
       if (tasks) {

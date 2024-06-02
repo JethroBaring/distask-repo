@@ -152,6 +152,7 @@ export const Tasks = () => {
       });
 
       const data = await response.json();
+      console.log("here")
       console.log(data);
       if (response.ok) {
         const newTasks = tasks.map((column) => ({
@@ -282,7 +283,11 @@ export const Tasks = () => {
                               </div>
                               <div>{task.description}</div>
                             </div>
-                            <div className='flex justify-end'>
+                            <div className='flex justify-between'>
+                              <div className='flex gap-2 items-center'>
+                                <div className='w-8 rounded-full bg-slate-300 h-8 flex justify-center items-center'>{task.user.email.charAt(0).toUpperCase()}{task.user.email.charAt(1)}</div>
+                                <div className='text-sm'>{task.user.email}</div>
+                              </div>
                               <button onClick={() => deleteTask(task.id)}>
                                 <svg
                                   xmlns='http://www.w3.org/2000/svg'

@@ -19,7 +19,9 @@ const createTask = async (req: Request, res: Response) => {
     } else {
       return res.status(400).json(task);
     }
-  } catch (error) {}
+  } catch (error) {
+    return res.status(400).json({ error: 'Error' });
+  }
 };
 
 const getTasksByGroupId = async (req: Request, res: Response) => {
@@ -46,7 +48,40 @@ const getTasksByGroupId = async (req: Request, res: Response) => {
     } else {
       return res.status(400).json({ error: 'Group not found' });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-export { createTask, getTasksByGroupId };
+const updateTaskById = async (req: Request, res: Response) => {
+  try {
+    const data = req.params;
+    const body = req.body;
+    const task = await prisma.task.findFirst({
+      where: {
+        id: Number.parseInt(data.taskId),
+      },
+    });
+
+    if (task !== null) {
+      const task = await prisma.task.update({
+        data: {
+          status: body.status,
+        },
+        where: {
+          id: Number.parseInt(data.taskId),
+        },
+      });
+
+      if (task) {
+        return res.status(200).json(task);
+      } else {
+        return res.status(400).json(task);
+      }
+    }
+  } catch (error) {
+    return res.status(400).json({ error: 'Error' });
+  }
+};
+
+export { createTask, getTasksByGroupId, updateTaskById };

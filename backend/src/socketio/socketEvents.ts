@@ -30,7 +30,7 @@ const socketEvents = (io: Server) => {
           groupId: message.groupId,
         }),
       });
-      
+
       const data = await response.json();
       if (response.ok) {
         io.to(message.room).emit('receivedMessage', data);
@@ -48,26 +48,27 @@ const socketEvents = (io: Server) => {
     });
 
     socket.on('task', async (message) => {
-      const response = await fetch('http://localhost:3000/message/', {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Bearer ${message.token}`,
-        },
-        body: JSON.stringify({
-          content: message.content,
-          userId: message.userId,
-          worldId: message.worldId,
-          channelId: message.channelId,
-        }),
-      });
+      console.log(message);
+      io.to(message.id).emit('onTaskChange', message);
+      // const response = await fetch('http://localhost:3000/message/', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-type': 'application/json',
+      //     Authorization: `Bearer ${message.token}`,
+      //   },
+      //   body: JSON.stringify({
+      //     content: message.content,
+      //     userId: message.userId,
+      //     worldId: message.worldId,
+      //     channelId: message.channelId,
+      //   }),
+      // });
 
-      const data = await response.json();
-      if (response.ok) {
-        io.to(message.room).emit('message', data);
-      }
+      // const data = await response.json();
+      // if (response.ok) {
+      //   io.to(message.room).emit('onTaskChange', data);
+      // }
     });
-
   });
 };
 

@@ -79,11 +79,8 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const getUser = () => {
       const user = getItem('user');
-      console.log(user)
       if (user) {
         setUser(JSON.parse(user));
-        console.log("here")
-        console.log(user)
       }
     };
 

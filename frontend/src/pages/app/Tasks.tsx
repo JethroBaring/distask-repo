@@ -1,63 +1,111 @@
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import mockData from '../../mockData';
 import { useEffect, useState } from 'react';
 import Card from '../../components/Card';
 import { useParams } from 'react-router-dom';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { socket } from '../../socket';
 export const Tasks = () => {
-  const [data, setData] = useState(mockData);
+  const [user, setUser] = useState('');
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const { getItem } = useLocalStorage();
+
+  useEffect(() => {
+    const user = getItem('user');
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+  }, []);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [tasks, setTasks] = useState([])
+  const [tasks, setTasks] = useState([
+    {
+      id: '1',
+      title: ' 📃 To do',
+      tasks: [],
+    },
+    {
+      id: '2',
+      title: ' ✏️ In progress',
+      tasks: [],
+    },
+    {
+      id: '3',
+      title: ' ✔️ Completed',
+      tasks: [],
+    },
+  ]);
   const { id } = useParams();
-  const onDragEnd = (result) => {
+  const onDragEnd = async (result) => {
     if (!result.destination) return;
     const { source, destination } = result;
 
     if (source.droppableId !== destination.droppableId) {
-      const sourceColIndex = data.findIndex((e) => e.id === source.droppableId);
-      const destinationColIndex = data.findIndex(
+      const sourceColIndex = tasks.findIndex(
+        (e) => e.id === source.droppableId
+      );
+      const destinationColIndex = tasks.findIndex(
         (e) => e.id === destination.droppableId
       );
 
-      const sourceCol = data[sourceColIndex];
-      const destinationCol = data[destinationColIndex];
+      const sourceCol = tasks[sourceColIndex];
+      const destinationCol = tasks[destinationColIndex];
 
       const sourceTask = [...sourceCol.tasks];
       const destinationTask = [...destinationCol.tasks];
 
       const [removed] = sourceTask.splice(source.index, 1);
       console.log(removed);
-      console.log(data[destinationColIndex].title);
+      console.log(tasks[destinationColIndex].title);
       destinationTask.splice(destination.index, 0, removed);
-      data[sourceColIndex].tasks = sourceTask;
-      data[destinationColIndex].tasks = destinationTask;
+      tasks[sourceColIndex].tasks = sourceTask;
+      tasks[destinationColIndex].tasks = destinationTask;
 
-      setData(data);
+      setTasks(tasks);
+      let status = 'PENDING';
+      if (tasks[destinationColIndex].title.includes('In progress')) {
+        status = 'IN_PROGRESS';
+      } else if (tasks[destinationColIndex].title.includes('Completed')) {
+        status = 'COMPLETED';
+      }
+
+      const response = await fetch(`http://localhost:3000/task/${removed.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+        body: JSON.stringify({
+          status: status,
+        }),
+      });
+
+      if (response.ok) {
+        console.log('success');
+      }
     } else {
-      const sourceColIndex = data.findIndex((e) => e.id === source.droppableId);
-      const sourceCol = data[sourceColIndex];
+      const sourceColIndex = tasks.findIndex(
+        (e) => e.id === source.droppableId
+      );
+      const sourceCol = tasks[sourceColIndex];
 
-      // Remove the item from the source tasks array
       const [removed] = sourceCol.tasks.splice(source.index, 1);
 
-      // Insert the removed item into the destination tasks array at the destination index
       sourceCol.tasks.splice(destination.index, 0, removed);
-
-      // Update the state with the modified data
-      setData([...data]);
+      setTasks([...tasks]);
     }
   };
 
   async function createTask() {
+    console.log(title, description);
     const response = await fetch('http://localhost:3000/task/', {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',
-        Authorization: 'Bearer sample',
+        Authorization: `Bearer ${user.accessToken}`,
       },
       body: JSON.stringify({
-        userId: 1,
-        groupId: 1,
+        userId: user.id,
+        groupId: Number.parseInt(id),
         title: title,
         description: description,
       }),
@@ -67,44 +115,93 @@ export const Tasks = () => {
     if (response.ok) {
       console.log(data);
     }
+    console.log(response);
   }
 
   useEffect(() => {
     async function getTasks() {
-      const response = await fetch('http://localhost:3000/tasks/1', {
+      const response = await fetch('http://localhost:3000/tasks/2', {
         method: 'get',
         headers: {
-          Authorization: 'Bearer lol'
-        }
-      })
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      });
 
-      const data = await response.json()
-
-      if(response.ok) {
-        setTasks(data.results)
+      const data = await response.json();
+      console.log(data);
+      if (response.ok) {
+        const newTasks = tasks.map((column) => ({
+          ...column,
+          tasks: data.filter((task) => {
+            if (column.title.includes('To do'))
+              return task.status === 'PENDING';
+            if (column.title.includes('In progress'))
+              return task.status === 'IN_PROGRESS';
+            if (column.title.includes('Completed'))
+              return task.status === 'COMPLETED';
+            return false;
+          }),
+        }));
+        setTasks(newTasks);
+        console.log(newTasks);
       }
     }
 
-    getTasks()
-  })
+    getTasks();
+  }, [id, user]);
+
+  useEffect(() => {
+    function onConnect() {
+      setIsConnected(true);
+      socket.emit('joinBoard', id);
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+      socket.emit('leaveBoard', id);
+    }
+
+    function onTaskChange(data) {
+      console.log(data);
+    }
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('receivedMessage', onTaskChange);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('receivedMessage', onTaskChange);
+    };
+  }, [id]);
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className='flex gap-6 h-full pl-6 pr-6 pb-6'>
-        {data.map((section) => (
-          <Droppable key={section.id} droppableId={section.id}>
+        {tasks.map((section) => (
+          <Droppable key={`${section.id}`} droppableId={`${section.id}`}>
             {(provided) => (
               <div
                 {...provided.droppableProps}
                 className='flex-1 flex flex-col gap-3 rounded-lg'
                 ref={provided.innerRef}
               >
-                <div className=''>{section.title}</div>
+                <div className='flex gap-3'>
+                  <div>{section.title}</div>
+                  <button
+                    onClick={() =>
+                      document.getElementById('my_modal_2').showModal()
+                    }
+                  >
+                    +
+                  </button>
+                </div>
                 <div className='flex flex-col gap-3'>
                   {section.tasks.map((task, index) => (
                     <Draggable
-                      key={task.id}
-                      draggableId={task.id}
+                      key={`${task.id}`}
+                      draggableId={`${task.id}`}
                       index={index}
                     >
                       {(provided, snapshot) => (
@@ -132,86 +229,30 @@ export const Tasks = () => {
           </Droppable>
         ))}
       </div>
+      <dialog id='my_modal_2' className='modal'>
+        <div className='modal-box flex items-center flex-col gap-3 w-[400px]'>
+          <h3 className='font-bold text-lg'>Enter task information</h3>
+          <input
+            type='text'
+            placeholder='Type here'
+            className='input input-bordered w-full'
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <textarea
+            placeholder='Type here'
+            className='input input-bordered w-full h-32'
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          <button className='btn btn-primary w-full' onClick={createTask}>
+            Add
+          </button>
+        </div>
+        <form method='dialog' className='modal-backdrop'>
+          <button>close</button>
+        </form>
+      </dialog>
     </DragDropContext>
-
-    /* <DragDropContext onDragEnd={onDragEnd}>
-    <div className='flex gap-6 h-full pl-6 pr-6 pb-6'>
-        {data.map((section) => {
-            <Droppable key={section.id} droppableId={section.id}>
-                {(provided) => (
-                    <div className='flex-1 flex flex-col gap-3 bg-blue-500 rounded-lg p-3'>
-                    <h1>Pending</h1>
-                    <div className='flex flex-col gap-3'>
-
-                   {section.tasks.map((task, index) => (
-                    <Draggable key={task.id} draggableId={task.id} index={index}>
-                        {(provided, snapshot) => (
-                             <div  ref={provided.innerRef}
-                                                       {...provided.draggableProps}
-                                                       {...provided.dragHandleProps} className='bg-red-500 rounded-lg h-36'>{task.title}</div>
-                        )}
-                    </Draggable>
-                   ))}
-                                              </div>
-
-                  </div>
-                )}
-            </Droppable>
-        })}
-    </div>
-</DragDropContext> */
-
-    // <div className='flex gap-6 h-full pl-6 pr-6 pb-6'>
-    //   <div className='flex-1 flex flex-col gap-3 bg-blue-500 rounded-lg p-3'>
-    //     <h1>Pending</h1>
-    //     <div className='flex flex-col gap-3'>
-    //       <div className='bg-red-500 rounded-lg h-36'></div>
-    //     </div>
-    //   </div>
-    //   <div className='flex-1 bg-blue-500 rounded-lg p-3'></div>
-    //   <div className='flex-1 bg-blue-500 rounded-lg p-3'></div>
-    // </div>
-
-    // <DragDropContext onDragEnd={onDragEnd}>
-    //       <div className='kanban'>
-    //         {data.map((section) => (
-    //           <Droppable key={section.id} droppableId={section.id}>
-    //             {(provided) => (
-    //               <div
-    //                 {...provided.droppableProps}
-    //                 className='kanban__section'
-    //                 ref={provided.innerRef}
-    //               >
-    //                 <div className='kanban__section__title'>{section.title}</div>
-    //                 <div className='kanban__section__content'>
-    //                   {section.tasks.map((task, index) => (
-    //                     <Draggable
-    //                       key={task.id}
-    //                       draggableId={task.id}
-    //                       index={index}
-    //                     >
-    //                       {(provided, snapshot) => (
-    //                         <div
-    //                           ref={provided.innerRef}
-    //                           {...provided.draggableProps}
-    //                           {...provided.dragHandleProps}
-    //                           style={{
-    //                             ...provided.draggableProps.style,
-    //                             opacity: snapshot.isDragging ? '0.5' : '1',
-    //                           }}
-    //                         >
-    //                           <Card>{task.title}</Card>
-    //                         </div>
-    //                       )}
-    //                     </Draggable>
-    //                   ))}
-    //                   {provided.placeholder}
-    //                 </div>
-    //               </div>
-    //             )}
-    //           </Droppable>
-    //         ))}
-    //       </div>
-    //     </DragDropContext>
   );
 };

@@ -20,7 +20,7 @@ const createMessage = async (req: Request, res: Response) => {
             email: true,
             groupMembership: {
               where: {
-                groupId: data.groupId
+                groupId: data.groupId,
               },
               select: {
                 role: true,
@@ -46,12 +46,29 @@ const getMessagesByGuildId = async (req: Request, res: Response) => {
     const params = req.params;
     const messages = await prisma.message.findMany({
       where: {
-        groupId: Number.parseInt(params.groupId)
+        groupId: Number.parseInt(params.groupId),
       },
-      include: {
-        user: true
-      }
-    })
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            groupMembership: {
+              where: {
+                groupId: Number.parseInt(params.groupId),
+              },
+              select: {
+                role: true,
+                nickname: true,
+              },
+            },
+          },
+        },
+      },
+    });
     // const messages = await prisma.message.findMany({
     //   where: {
     //     groupId: Number.parseInt(params.groupId),

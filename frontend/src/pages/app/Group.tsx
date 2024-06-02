@@ -1,7 +1,7 @@
-import { useAuth } from '../../hooks/useAuth';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { socket } from '../../socket';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 type Message = {
   id: number;
@@ -10,17 +10,28 @@ type Message = {
 };
 
 export const Group = () => {
+  const [user, setUser] = useState('');
+  const { getItem } = useLocalStorage();
+
+  useEffect(() => {
+    const user = getItem('user');
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+  }, []);
+
   const { id } = useParams();
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzE3Mjk4OTMxLCJleHAiOjE3MTc1NTgxMzF9.AjrzTJqXGypH04lcfKCSocFuuZlVZYysKsBje-H6DSk'
+  const token =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzE3Mjk4OTMxLCJleHAiOjE3MTc1NTgxMzF9.AjrzTJqXGypH04lcfKCSocFuuZlVZYysKsBje-H6DSk';
 
   function sendMessage(e) {
-    e.preventDefault()
+    e.preventDefault();
     socket.emit('message', {
-      userId: 1,
+      userId: user.id,
       content: message,
       groupId: Number.parseInt(id!),
       token: token,
@@ -28,27 +39,28 @@ export const Group = () => {
     });
     setMessage('');
   }
-  
+
   useEffect(() => {
     async function getMessages() {
       const response = await fetch(`http://localhost:3000/messages/${id}`, {
         method: 'get',
         headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzE3MzEzMDY4LCJleHAiOjE3MTc1NzIyNjh9.bYiQNXhP7RqzYODmmq-F8mczpR5GGp8Rf4eCKeJDIFo`
-        }
-      })
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
-      if(response.ok) {
-        console.log(data)
-        setMessages(data)
+      if (response.ok) {
+        console.log(data);
+        setMessages(data);
       }
     }
 
-    getMessages()
-  }, [id])
-
+    if (user) {
+      getMessages();
+    }
+  }, [id, user]);
 
   useEffect(() => {
     function onConnect() {
@@ -62,8 +74,8 @@ export const Group = () => {
     }
 
     function onMessageReceived(data) {
-      console.log('Message received:');
       console.log(data)
+      setMessages(prevMessages => [...prevMessages, data])
     }
 
     socket.on('connect', onConnect);
@@ -75,14 +87,14 @@ export const Group = () => {
       socket.off('disconnect', onDisconnect);
       socket.off('receivedMessage', onMessageReceived);
     };
-  }, [id]); 
+  }, [id]);
 
   return (
     <>
       <div className='flex-1 overflow-scroll p-3'>
         <div className='h-0'>
           {messages.map((message: Message) => {
-            if (message.user.id === 2) {
+            if (message.user.id === user.id) {
               return (
                 <div className='chat chat-end' key={message.id}>
                   <div className='chat-image avatar'>
@@ -124,14 +136,17 @@ export const Group = () => {
           <div id='bottom'></div>
         </div>
       </div>
-      <form className='flex gap-3 items-center p-3 relative' onSubmit={sendMessage}>
+      <form
+        className='flex gap-3 items-center p-3 relative'
+        onSubmit={sendMessage}
+      >
         <input
           type='text'
           className='input w-full'
           onChange={(e) => setMessage(e.target.value)}
           value={message}
         />
-        <button className='absolute right-[35px]' onClick={sendMessage}>
+        <button className='absolute right-[25px]' onClick={sendMessage}>
           <svg
             xmlns='http://www.w3.org/2000/svg'
             fill='none'

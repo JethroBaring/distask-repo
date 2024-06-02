@@ -1,8 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 export const Groups = () => {
+  const [user, setUser] = useState('');
+  const { getItem } = useLocalStorage();
+  const { id } = useParams();
+
+  useEffect(() => {
+    const user = getItem('user');
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+  }, []);
   const [groups, setGroups] = useState([]);
   const [groupId, setGroupId] = useState(0);
   const [groupName, setGroupName] = useState('');
@@ -17,7 +28,7 @@ export const Groups = () => {
         Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzE3MzEzMDY4LCJleHAiOjE3MTc1NzIyNjh9.bYiQNXhP7RqzYODmmq-F8mczpR5GGp8Rf4eCKeJDIFo`,
       },
       body: JSON.stringify({
-        userId: 3,
+        userId: user.id,
         groupId: groupId,
       }),
     });
@@ -40,7 +51,7 @@ export const Groups = () => {
       },
       body: JSON.stringify({
         name: groupName,
-        creator: 3,
+        creator: user.id,
       }),
     });
 
@@ -53,7 +64,7 @@ export const Groups = () => {
 
   useEffect(() => {
     async function getGroups() {
-      const response = await fetch('http://localhost:3000/groups/3', {
+      const response = await fetch(`http://localhost:3000/groups/${user.id}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzE3MzEzMDY4LCJleHAiOjE3MTc1NzIyNjh9.bYiQNXhP7RqzYODmmq-F8mczpR5GGp8Rf4eCKeJDIFo`,
@@ -69,7 +80,7 @@ export const Groups = () => {
     }
 
     getGroups();
-  }, []);
+  }, [user.id]);
 
   return (
     <>
@@ -101,14 +112,30 @@ export const Groups = () => {
               </svg>
             </button>
           </div>
+          <form className='flex gap-3 items-center p-3 relative'>
+            <input type='text' className='input w-full' />
+            <button className='absolute right-[25px]'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+                strokeWidth='1.5'
+                stroke='currentColor'
+                className='w-6 h-6'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5'
+                />
+              </svg>
+            </button>
+          </form>
           <div className='flex flex-col gap-3 p-3'>
             {groups.map((group) => {
               return (
-                <Link to={`/message/${group.group.id}`}>
-                  <div
-                    className='rounded-lg hover:bg-slate-300 h-20 flex items-center p-3 gap-3 cursor-pointer'
-                    key={group.group.id}
-                  >
+                <Link to={`/message/${group.group.id}`} key={group.group.id}>
+                  <div className='rounded-lg hover:bg-slate-300 h-20 flex items-center p-3 gap-3 cursor-pointer'>
                     <div className='h-16 w-16 rounded-full bg-slate-500' />
                     <div className='flex flex-col justify-center'>
                       <p className='font-semibold'>{group.group.name}</p>

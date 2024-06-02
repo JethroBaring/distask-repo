@@ -2,7 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import AuthLayout from './layouts/AuthLayout';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import { Group } from './pages/app/Group';
+import { Group } from './pages/app/Messages';
 import { Groups } from './pages/app/Groups';
 import { Default } from './pages/app/Default';
 import { Tasks } from './pages/app/Tasks';

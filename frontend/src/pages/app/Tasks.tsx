@@ -9,7 +9,7 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { socket } from '../../socket';
 export const Tasks = () => {
   const [user, setUser] = useState('');
-  const [newTaskStatus, setNewTaskStatus] = useState("To do")
+  const [newTaskStatus, setNewTaskStatus] = useState('To do');
   const [isConnected, setIsConnected] = useState(socket.connected);
   const { getItem } = useLocalStorage();
 
@@ -44,81 +44,68 @@ export const Tasks = () => {
     const { source, destination } = result;
 
     if (source.droppableId !== destination.droppableId) {
-      setTasks((prevTasks) => {
-        const sourceColIndex = prevTasks.findIndex(
-          (e) => e.id === source.droppableId
-        );
-        const destinationColIndex = prevTasks.findIndex(
-          (e) => e.id === destination.droppableId
-        );
+      const sourceColIndex = tasks.findIndex(
+        (e) => e.id === source.droppableId
+      );
+      const destinationColIndex = tasks.findIndex(
+        (e) => e.id === destination.droppableId
+      );
 
-        const sourceCol = prevTasks[sourceColIndex];
-        const destinationCol = prevTasks[destinationColIndex];
+      const sourceCol = tasks[sourceColIndex];
+      const destinationCol = tasks[destinationColIndex];
 
-        const sourceTasks = [...sourceCol.tasks];
-        const destinationTasks = [...destinationCol.tasks];
+      const sourceTask = [...sourceCol.tasks];
+      const destinationTask = [...destinationCol.tasks];
 
-        const [removed] = sourceTasks.splice(source.index, 1);
-        destinationTasks.splice(destination.index, 0, removed);
+      const [removed] = sourceTask.splice(source.index, 1);
+      console.log(removed);
+      console.log(tasks[destinationColIndex].title);
+      destinationTask.splice(destination.index, 0, removed);
+      tasks[sourceColIndex].tasks = sourceTask;
+      tasks[destinationColIndex].tasks = destinationTask;
 
-        const newTasks = [...prevTasks];
-        newTasks[sourceColIndex] = { ...sourceCol, tasks: sourceTasks };
-        newTasks[destinationColIndex] = {
-          ...destinationCol,
-          tasks: destinationTasks,
-        };
+      setTasks(tasks);
+      let status = 'PENDING';
+      if (tasks[destinationColIndex].title.includes('In progress')) {
+        status = 'IN_PROGRESS';
+      } else if (tasks[destinationColIndex].title.includes('Completed')) {
+        status = 'COMPLETED';
+      }
 
-        // Emit the task update event to the server
-        socket.emit('taskUpdate', {
-          sourceColId: source.droppableId,
-          destinationColId: destination.droppableId,
-          task: removed,
-          boardId: id,
-        });
-
-        return newTasks;
+      const response = await fetch(`http://localhost:3000/task/${removed.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+        body: JSON.stringify({
+          status: status,
+        }),
       });
-      // const response = await fetch(`http://localhost:3000/task/${removed.id}`, {
-      //   method: 'PATCH',
-      //   headers: {
-      //     'Content-type': 'application/json',
-      //     Authorization: `Bearer ${user.accessToken}`,
-      //   },
-      //   body: JSON.stringify({
-      //     status: status,
-      //   }),
-      // });
 
-      // if (response.ok) {
-      //   console.log('success');
-      // }
+      if (response.ok) {
+        console.log('success');
+      }
     } else {
-      setTasks((prevTasks) => {
-        const sourceColIndex = prevTasks.findIndex(
-          (e) => e.id === source.droppableId
-        );
-        const sourceCol = prevTasks[sourceColIndex];
+      const sourceColIndex = tasks.findIndex(
+        (e) => e.id === source.droppableId
+      );
+      const sourceCol = tasks[sourceColIndex];
 
-        const sourceTasks = [...sourceCol.tasks];
-        const [removed] = sourceTasks.splice(source.index, 1);
-        sourceTasks.splice(destination.index, 0, removed);
+      const [removed] = sourceCol.tasks.splice(source.index, 1);
 
-        const newTasks = [...prevTasks];
-        newTasks[sourceColIndex] = { ...sourceCol, tasks: sourceTasks };
-
-        return newTasks;
-      });
+      sourceCol.tasks.splice(destination.index, 0, removed);
+      setTasks([...tasks]);
     }
   };
 
   async function createTask() {
-    let s = "PENDING"
-    if(newTaskStatus.includes("In progress")) {
-      s = "IN_PROGRESS"
-    } else if(newTaskStatus.includes("Completed")) {
-      s = "COMPLETED"
+    let s = 'PENDING';
+    if (newTaskStatus.includes('In progress')) {
+      s = 'IN_PROGRESS';
+    } else if (newTaskStatus.includes('Completed')) {
+      s = 'COMPLETED';
     }
-
 
     const response = await fetch('http://localhost:3000/task/', {
       method: 'POST',
@@ -131,7 +118,7 @@ export const Tasks = () => {
         groupId: Number.parseInt(id),
         title: title,
         description: description,
-        status: s
+        status: s,
       }),
     });
 
@@ -250,10 +237,9 @@ export const Tasks = () => {
                   <div>{section.title}</div>
                   <button
                     onClick={() => {
-                      setNewTaskStatus(section.title)
-                      document.getElementById('my_modal_2').showModal()
-                    }
-                    }
+                      setNewTaskStatus(section.title);
+                      document.getElementById('my_modal_2').showModal();
+                    }}
                   >
                     +
                   </button>

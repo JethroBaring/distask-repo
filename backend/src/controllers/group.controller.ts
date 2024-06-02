@@ -73,39 +73,32 @@ const getGroupById = async (req: Request, res: Response) => {
 
 const joinGroup = async (req: Request, res: Response) => {
   try {
-
     const data = req.body;
 
     const group = await prisma.group.findFirst({
       where: {
-        id: data.groupId
-      }
-    })
+        id: data.groupId,
+      },
+    });
 
-    if(group !== null) {
+    if (group !== null) {
       const group = await prisma.groupMembership.create({
         data: {
           userId: data.userId,
           groupId: data.groupId,
-          role: 'MEMBER'
-        }
+          role: 'MEMBER',
+        },
       });
-  
+
       if (group) {
         return res.status(200).json(group);
       } else {
         return res.status(400).json(group);
       }
     } else {
-      return res.status(400).json({error: "Group not found."})
+      return res.status(400).json({ error: 'Group not found.' });
     }
-
   } catch (error) {}
 };
 
-export {
-  createGroup,
-  getGroupsByUser,
-  getGroupById,
-  joinGroup
-};
+export { createGroup, getGroupsByUser, getGroupById, joinGroup };

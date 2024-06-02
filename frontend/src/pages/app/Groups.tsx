@@ -83,6 +83,7 @@ export const Groups = () => {
       if (response.ok) {
         setGroups(data.results);
         setG(data.results);
+        console.log(data.results)
       }
     }
     if (user.id) {
@@ -180,10 +181,11 @@ export const Groups = () => {
                         : ''
                     }`}
                   >
-                    <div className='h-16 w-16 rounded-full bg-slate-500' />
+                    <div className='h-16 w-16 rounded-full bg-slate-500 flex items-center justify-center text-2xl text-white'>
+                      {group.group.name.charAt(0).toUpperCase()}{group.group.name.charAt(1)}
+                    </div>
                     <div className='flex flex-col justify-center'>
                       <p className='font-semibold'>{group.group.name}</p>
-                      <p>You: Hi guys</p>
                     </div>
                   </div>
                 </Link>

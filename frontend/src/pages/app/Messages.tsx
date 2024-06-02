@@ -110,7 +110,7 @@ export const Group = () => {
                   <div className='chat-image avatar'>
                     <div class='avatar placeholder'>
                       <div class='bg-slate-400 text-neutral-content rounded-full w-11'>
-                        <span class='text-xl'>AI</span>
+                        <span class='text-xl'>{message.user.email.charAt(0).toUpperCase()}{message.user.email.charAt(1)}</span>
                       </div>
                     </div>
                   </div>
@@ -124,7 +124,7 @@ export const Group = () => {
                   <div className='chat-image avatar'>
                     <div class='avatar placeholder'>
                       <div class='bg-slate-400 text-neutral-content rounded-full w-11'>
-                        <span class='text-xl'>AI</span>
+                        <span class='text-xl'>{message.user.email.charAt(0).toUpperCase()}{message.user.email.charAt(1)}</span>
                       </div>
                     </div>
                   </div>

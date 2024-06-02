@@ -10,10 +10,6 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      'buffer': 'buffer',
-      'util': 'util',
-      'process': 'process/browser',
-      'stream': 'stream-browserify',
       "@": path.resolve(__dirname, "./src"),
     }
   }

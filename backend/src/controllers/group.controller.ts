@@ -1,10 +1,10 @@
-import prisma from '../utils/db';
 import { Request, Response } from 'express';
+import prisma from '../utils/db';
 
 const createGroup = async (req: Request, res: Response) => {
   try {
     const data = req.body;
-    const guild = await prisma.group.create({
+    const group = await prisma.group.create({
       data: {
         name: data.name,
         creatorId: Number.parseInt(data.creator),
@@ -19,9 +19,9 @@ const createGroup = async (req: Request, res: Response) => {
       },
     });
 
-    if (guild) {
+    if (group) {
       console.log('test');
-      return res.status(200).json(guild);
+      return res.status(200).json(group);
     } else {
       console.log('something wrong');
     }
@@ -33,7 +33,7 @@ const createGroup = async (req: Request, res: Response) => {
 const getGroupsByUser = async (req: Request, res: Response) => {
   try {
     const params = req.params;
-    const worlds = await prisma.groupMembership.findMany({
+    const groups = await prisma.groupMembership.findMany({
       where: {
         userId: Number.parseInt(params.id),
       },
@@ -47,11 +47,11 @@ const getGroupsByUser = async (req: Request, res: Response) => {
       },
     });
 
-    if (!worlds) return res.status(400).json({ message: 'Not found' });
+    if (!groups) return res.status(400).json({ message: 'Not found' });
 
     return res.status(200).json({
-      count: worlds.length,
-      results: worlds,
+      count: groups.length,
+      results: groups,
     });
   } catch (error) {}
 };
@@ -59,7 +59,7 @@ const getGroupsByUser = async (req: Request, res: Response) => {
 const getGroupById = async (req: Request, res: Response) => {
   try {
     const params = req.params;
-    const world = await prisma.group.findUnique({
+    const group = await prisma.group.findUnique({
       where: {
         id: Number.parseInt(params.id),
       },
@@ -72,9 +72,9 @@ const getGroupById = async (req: Request, res: Response) => {
       },
     });
 
-    if (!world) return res.status(400).json({ message: 'Not found' });
+    if (!group) return res.status(400).json({ message: 'Not found' });
 
-    return res.status(200).json(world);
+    return res.status(200).json(group);
   } catch (error) {}
 };
 
@@ -143,4 +143,5 @@ const leaveGroup = async (req: Request, res: Response) => {
   }
 };
 
-export { createGroup, getGroupsByUser, getGroupById, joinGroup, leaveGroup };
+export { createGroup, getGroupById, getGroupsByUser, joinGroup, leaveGroup };
+

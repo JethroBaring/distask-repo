@@ -1,18 +1,18 @@
 import { Router } from 'express';
 import {
-  getGroupsByUser,
-  getGroupById,
   createGroup,
+  getGroupById,
+  getGroupsByUser,
   joinGroup,
   leaveGroup
 } from '../controllers/group.controller';
 
-const worldRouter: Router = Router();
+const groupRouter: Router = Router();
 
-worldRouter.get('/groups/:id', getGroupsByUser);
-worldRouter.get('/group/:id', getGroupById);
-worldRouter.post('/group/create', createGroup);
-worldRouter.post('/group/join', joinGroup);
-worldRouter.delete('/group/leave', leaveGroup)
+groupRouter.get('/groups/:id', getGroupsByUser);
+groupRouter.get('/group/:id', getGroupById);
+groupRouter.post('/group/create', createGroup);
+groupRouter.post('/group/join', joinGroup);
+groupRouter.delete('/group/leave', leaveGroup)
 
-export default worldRouter;
+export default groupRouter;

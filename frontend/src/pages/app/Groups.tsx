@@ -176,7 +176,7 @@ export const Groups = () => {
           <div className='flex flex-col gap-3 p-3'>
             {groups.map((group) => {
               return (
-                <Link to={`/message/${group.group.id}`} key={group.group.id}>
+                <Link to={`/message/${group.group.id}`} key={group.group.id} className='tooltip tooltip-right' data-tip={`Group Id: ${group.group.id}`}>
                   <div
                     className={`rounded-lg hover:bg-gradient-to-r from-slate-300 to-slate-400 h-20 flex items-center p-3 gap-3 cursor-pointer ${
                       id == group.group.id

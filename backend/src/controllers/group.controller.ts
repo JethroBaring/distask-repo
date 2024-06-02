@@ -63,6 +63,13 @@ const getGroupById = async (req: Request, res: Response) => {
       where: {
         id: Number.parseInt(params.id),
       },
+      include: {
+        groupMembership: {
+          include: {
+            user: true,
+          },
+        },
+      },
     });
 
     if (!world) return res.status(400).json({ message: 'Not found' });
@@ -101,4 +108,39 @@ const joinGroup = async (req: Request, res: Response) => {
   } catch (error) {}
 };
 
-export { createGroup, getGroupsByUser, getGroupById, joinGroup };
+const leaveGroup = async (req: Request, res: Response) => {
+  try {
+    const { userId, groupId } = req.body;
+
+    const membership = await prisma.groupMembership.findFirst({
+      where: {
+        userId: Number.parseInt(userId),
+        groupId: Number.parseInt(groupId),
+      },
+    });
+
+    if (!membership) {
+      return res.status(400).json({ message: 'Membership not found' });
+    }
+
+    const group = await prisma.groupMembership.delete({
+      where: {
+        userId_groupId: {
+          userId,
+          groupId,
+        },
+      },
+    });
+
+    if (group) {
+      return res.status(200).json({ message: 'Successfully left the group' });
+    } else {
+      return res.status(400);
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export { createGroup, getGroupsByUser, getGroupById, joinGroup, leaveGroup };

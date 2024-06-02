@@ -12,6 +12,8 @@ export const Groups = () => {
   const [user, setUser] = useState('');
   const [search, setSearch] = useState('');
   const { getItem } = useLocalStorage();
+  const [showInformation, setShowInformation] = useState(false);
+  const [currentGroup, setCurrentGroup] = useState('');
   const { id } = useParams();
   useEffect(() => {
     const user = getItem('user');
@@ -64,6 +66,27 @@ export const Groups = () => {
       window.location.href = `/message/${data.id}`;
     }
   }
+
+  async function leaveGroup() {
+    const response = await fetch('http://localhost:3000/group/leave', {
+      method: 'delete',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${user.accessToken}`,
+      },
+      body: JSON.stringify({
+        userId: user.id,
+        groupId: Number.parseInt(currentGroup.id),
+      }),
+    });
+    const data = await response.json();
+
+    if (response.ok) {
+      window.location.href = `/`;
+    }
+
+  }
+
   function handleSearch(e) {
     e.preventDefault();
     const updatedGroups = g.filter((group) =>
@@ -92,6 +115,29 @@ export const Groups = () => {
       getGroups();
     }
   }, [user.id]);
+
+  useEffect(() => {
+    async function getGroup() {
+      const response = await fetch(`http://localhost:3000/group/${id}`, {
+        method: 'get',
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log(data);
+        setCurrentGroup((prevData) => data);
+      }
+    }
+
+    if (user && id) {
+      getGroup();
+      console.log(currentGroup);
+    }
+  }, [user.id, id]);
 
   return (
     <>
@@ -176,7 +222,12 @@ export const Groups = () => {
           <div className='flex flex-col gap-3 p-3'>
             {groups.map((group) => {
               return (
-                <Link to={`/message/${group.group.id}`} key={group.group.id} className='tooltip tooltip-right' data-tip={`Group Id: ${group.group.id}`}>
+                <Link
+                  to={`/message/${group.group.id}`}
+                  key={group.group.id}
+                  className='tooltip tooltip-right'
+                  data-tip={`Group Id: ${group.group.id}`}
+                >
                   <div
                     className={`rounded-lg hover:bg-gradient-to-r from-slate-300 to-slate-400 h-20 flex items-center p-3 gap-3 cursor-pointer ${
                       id == group.group.id
@@ -199,7 +250,49 @@ export const Groups = () => {
         </div>
         <div className='bg-gradient-to-r from-slate-100 to-slate-300 rounded-lg flex-1 flex flex-col'>
           <div className='text-2xl font-bold flex justify-between items-center p-3'>
-            <h1 className=''>
+            <ul className='text-base menu menu-horizontal dropdown-content px-1 z-10 p-0'>
+              <li>
+                <details>
+                  <summary>
+                    {window.location.pathname.split('/')[1] === 'message'
+                      ? 'Messages'
+                      : window.location.pathname.split('/')[1] === 'tasks'
+                      ? 'Tasks'
+                      : ''}
+                  </summary>
+                  <ul className='p-2 bg-base-100 z-10'>
+                    <li>
+                      <Link to={`/message/${id}`} reloadDocument>
+                        Messages
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to={`/tasks/${id}`} reloadDocument>
+                        Tasks
+                      </Link>
+                    </li>
+                  </ul>
+                </details>
+              </li>
+            </ul>
+            <button onClick={() => setShowInformation(!showInformation)}>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+                strokeWidth={1.5}
+                stroke='currentColor'
+                className='size-6'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z'
+                />
+              </svg>
+            </button>
+
+            {/* <h1 className=''>
               {window.location.pathname.split('/')[1] === 'message'
                 ? 'Messages'
                 : window.location.pathname.split('/')[1] === 'tasks'
@@ -242,10 +335,44 @@ export const Groups = () => {
               </Link>
             ) : (
               ''
-            )}
+            )} */}
           </div>
           <Outlet />
         </div>
+        {/* Information Window */}
+        {currentGroup && showInformation ? (
+          <div className='w-[400px] bg-gradient-to-r from-slate-100 to-slate-300 flex flex-col items-center p-10 gap-10 justify-between'>
+            <div className='w-full flex flex-col gap-5'>
+              <div className='flex flex-col items-center gap-3'>
+                <div className='w-20 h-20 bg-slate-300 rounded-full flex justify-center items-center text-3xl font-semibold'>
+                  {currentGroup.name.charAt(0).toUpperCase()}
+                  {currentGroup.name.charAt(1)}
+                </div>
+                <div>ID: {currentGroup.id}</div>
+                <div className='text-xl font-semibold'>{currentGroup.name}</div>
+              </div>
+              <div className='flex flex-col w-full gap-5'>
+                <div className='text-sm'>Members</div>
+                <div className='flex flex-col gap-3'>
+                  {currentGroup.groupMembership.map((member) => (
+                    <div className='flex gap-2 items-center'>
+                      <div className='w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center'>{member.user.email.charAt(0).toUpperCase()}{member.user.email.charAt(1)}</div>
+                      <div>{member.user.email}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div
+              className='btn bg-red-500 text-white'
+              onClick={() => document.getElementById('leave_modal').showModal()}
+            >
+              Leave Group
+            </div>
+          </div>
+        ) : (
+          ''
+        )}
       </div>
       <dialog id='choices_modal' className='modal'>
         <div className='modal-box flex flex-col items-center gap-5 w-[300px]'>
@@ -303,6 +430,21 @@ export const Groups = () => {
         <form method='dialog' className='modal-backdrop'>
           <button>close</button>
         </form>
+      </dialog>
+      <dialog id='leave_modal' className='modal'>
+        <div className='modal-box flex flex-col items-center gap-5 w-[300px]'>
+          <h3 className='font-bold text-lg'>Leave Group</h3>
+          <p>Are you sure you want to leave this group?</p>
+          <div className='flex gap-3'>
+            <button className='btn btn-primary' onClick={leaveGroup}>Leave</button>
+            <button
+              className='btn btn-secondary'
+              onClick={() => document.getElementById('leave_modal').close()}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       </dialog>
     </>
   );

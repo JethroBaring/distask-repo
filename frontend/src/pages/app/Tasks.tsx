@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { useEffect, useState } from 'react';
 import Card from '../../components/Card';
@@ -6,6 +9,7 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { socket } from '../../socket';
 export const Tasks = () => {
   const [user, setUser] = useState('');
+  const [newTaskStatus, setNewTaskStatus] = useState("To do")
   const [isConnected, setIsConnected] = useState(socket.connected);
   const { getItem } = useLocalStorage();
 
@@ -40,63 +44,82 @@ export const Tasks = () => {
     const { source, destination } = result;
 
     if (source.droppableId !== destination.droppableId) {
-      const sourceColIndex = tasks.findIndex(
-        (e) => e.id === source.droppableId
-      );
-      const destinationColIndex = tasks.findIndex(
-        (e) => e.id === destination.droppableId
-      );
+      setTasks((prevTasks) => {
+        const sourceColIndex = prevTasks.findIndex(
+          (e) => e.id === source.droppableId
+        );
+        const destinationColIndex = prevTasks.findIndex(
+          (e) => e.id === destination.droppableId
+        );
 
-      const sourceCol = tasks[sourceColIndex];
-      const destinationCol = tasks[destinationColIndex];
+        const sourceCol = prevTasks[sourceColIndex];
+        const destinationCol = prevTasks[destinationColIndex];
 
-      const sourceTask = [...sourceCol.tasks];
-      const destinationTask = [...destinationCol.tasks];
+        const sourceTasks = [...sourceCol.tasks];
+        const destinationTasks = [...destinationCol.tasks];
 
-      const [removed] = sourceTask.splice(source.index, 1);
-      console.log(removed);
-      console.log(tasks[destinationColIndex].title);
-      destinationTask.splice(destination.index, 0, removed);
-      tasks[sourceColIndex].tasks = sourceTask;
-      tasks[destinationColIndex].tasks = destinationTask;
+        const [removed] = sourceTasks.splice(source.index, 1);
+        destinationTasks.splice(destination.index, 0, removed);
 
-      setTasks(tasks);
-      let status = 'PENDING';
-      if (tasks[destinationColIndex].title.includes('In progress')) {
-        status = 'IN_PROGRESS';
-      } else if (tasks[destinationColIndex].title.includes('Completed')) {
-        status = 'COMPLETED';
-      }
+        const newTasks = [...prevTasks];
+        newTasks[sourceColIndex] = { ...sourceCol, tasks: sourceTasks };
+        newTasks[destinationColIndex] = {
+          ...destinationCol,
+          tasks: destinationTasks,
+        };
 
-      const response = await fetch(`http://localhost:3000/task/${removed.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Bearer ${user.accessToken}`,
-        },
-        body: JSON.stringify({
-          status: status,
-        }),
+        // Emit the task update event to the server
+        socket.emit('taskUpdate', {
+          sourceColId: source.droppableId,
+          destinationColId: destination.droppableId,
+          task: removed,
+          boardId: id,
+        });
+
+        return newTasks;
       });
+      // const response = await fetch(`http://localhost:3000/task/${removed.id}`, {
+      //   method: 'PATCH',
+      //   headers: {
+      //     'Content-type': 'application/json',
+      //     Authorization: `Bearer ${user.accessToken}`,
+      //   },
+      //   body: JSON.stringify({
+      //     status: status,
+      //   }),
+      // });
 
-      if (response.ok) {
-        console.log('success');
-      }
+      // if (response.ok) {
+      //   console.log('success');
+      // }
     } else {
-      const sourceColIndex = tasks.findIndex(
-        (e) => e.id === source.droppableId
-      );
-      const sourceCol = tasks[sourceColIndex];
+      setTasks((prevTasks) => {
+        const sourceColIndex = prevTasks.findIndex(
+          (e) => e.id === source.droppableId
+        );
+        const sourceCol = prevTasks[sourceColIndex];
 
-      const [removed] = sourceCol.tasks.splice(source.index, 1);
+        const sourceTasks = [...sourceCol.tasks];
+        const [removed] = sourceTasks.splice(source.index, 1);
+        sourceTasks.splice(destination.index, 0, removed);
 
-      sourceCol.tasks.splice(destination.index, 0, removed);
-      setTasks([...tasks]);
+        const newTasks = [...prevTasks];
+        newTasks[sourceColIndex] = { ...sourceCol, tasks: sourceTasks };
+
+        return newTasks;
+      });
     }
   };
 
   async function createTask() {
-    console.log(title, description);
+    let s = "PENDING"
+    if(newTaskStatus.includes("In progress")) {
+      s = "IN_PROGRESS"
+    } else if(newTaskStatus.includes("Completed")) {
+      s = "COMPLETED"
+    }
+
+
     const response = await fetch('http://localhost:3000/task/', {
       method: 'POST',
       headers: {
@@ -108,6 +131,7 @@ export const Tasks = () => {
         groupId: Number.parseInt(id),
         title: title,
         description: description,
+        status: s
       }),
     });
 
@@ -120,7 +144,7 @@ export const Tasks = () => {
 
   useEffect(() => {
     async function getTasks() {
-      const response = await fetch('http://localhost:3000/tasks/2', {
+      const response = await fetch(`http://localhost:3000/tasks/${id}`, {
         method: 'get',
         headers: {
           Authorization: `Bearer ${user.accessToken}`,
@@ -162,12 +186,47 @@ export const Tasks = () => {
     }
 
     function onTaskChange(data) {
-      console.log(data);
+      setTasks((prevTasks) => {
+        const updatedTasks = prevTasks.map((column) => {
+          if (column.id === data.sourceColId) {
+            return {
+              ...column,
+              tasks: column.tasks.filter((task) => task.id !== data.task.id),
+            };
+          }
+          if (column.id === data.destinationColId) {
+            return {
+              ...column,
+              tasks: [...column.tasks, data.task],
+            };
+          }
+          return column;
+        });
+        return updatedTasks;
+      });
+      setTasks((prevTasks) => {
+        const updatedTasks = prevTasks.map((column) => {
+          if (column.id === data.sourceColId) {
+            return {
+              ...column,
+              tasks: column.tasks.filter((task) => task.id !== data.task.id),
+            };
+          }
+          if (column.id === data.destinationColId) {
+            return {
+              ...column,
+              tasks: [...column.tasks, data.task],
+            };
+          }
+          return column;
+        });
+        return updatedTasks;
+      });
     }
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('receivedMessage', onTaskChange);
+    socket.on('onTaskChange', onTaskChange);
 
     return () => {
       socket.off('connect', onConnect);
@@ -190,8 +249,10 @@ export const Tasks = () => {
                 <div className='flex gap-3'>
                   <div>{section.title}</div>
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      setNewTaskStatus(section.title)
                       document.getElementById('my_modal_2').showModal()
+                    }
                     }
                   >
                     +

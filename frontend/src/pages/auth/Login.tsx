@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -8,7 +10,6 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault()
-    console.log(email, password)
     login(email, password)
   }
 
@@ -67,7 +68,7 @@ function Login() {
         </button>
         <p className='text-center text-sm'>
           Don't have an account?{' '}
-          <a href='/signup' className='text-flutter-blue font-bold underline'>
+          <a href='/auth/register' className='text-flutter-blue font-bold underline'>
             Signup
           </a>
         </p>

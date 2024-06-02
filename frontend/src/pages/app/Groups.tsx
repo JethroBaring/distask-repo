@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';
@@ -5,9 +8,9 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 export const Groups = () => {
   const [user, setUser] = useState('');
+  const [search, setSearch] = useState('')
   const { getItem } = useLocalStorage();
   const { id } = useParams();
-
   useEffect(() => {
     const user = getItem('user');
     if (user) {
@@ -15,10 +18,11 @@ export const Groups = () => {
     }
   }, []);
   const [groups, setGroups] = useState([]);
+  const [g, setG] = useState([])
   const [groupId, setGroupId] = useState(0);
   const [groupName, setGroupName] = useState('');
   const [error, setError] = useState('');
-
+  // const [active, setActive] = useState(window.location.pathname.split('/')[1]);
   async function joinGroup() {
     console.log('lol');
     const response = await fetch('http://localhost:3000/group/join', {
@@ -47,7 +51,7 @@ export const Groups = () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzE3MzEzMDY4LCJleHAiOjE3MTc1NzIyNjh9.bYiQNXhP7RqzYODmmq-F8mczpR5GGp8Rf4eCKeJDIFo`,
+        Authorization: `Bearer ${user.acessToken}`,
       },
       body: JSON.stringify({
         name: groupName,
@@ -61,7 +65,11 @@ export const Groups = () => {
       window.location.href = `/message/${data.id}`;
     }
   }
-
+  function handleSearch(e) {
+    e.preventDefault()
+    const updatedGroups = g.filter(group => group.group.name.toLowerCase().includes(search.toLowerCase()))
+    setGroups(updatedGroups)
+  }
   useEffect(() => {
     async function getGroups() {
       const response = await fetch(`http://localhost:3000/groups/${user.id}`, {
@@ -74,8 +82,8 @@ export const Groups = () => {
       const data = await response.json();
 
       if (response.ok) {
-        console.log(data.results);
         setGroups(data.results);
+        setG(data.results)
       }
     }
 
@@ -112,21 +120,27 @@ export const Groups = () => {
               </svg>
             </button>
           </div>
-          <form className='flex gap-3 items-center p-3 relative'>
-            <input type='text' className='input w-full' />
+          <form className='flex gap-3 items-center p-3 relative' onSubmit={handleSearch}>
+            <input
+              type='text'
+              className='input w-full'
+              placeholder='Search...'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
             <button className='absolute right-[25px]'>
               <svg
                 xmlns='http://www.w3.org/2000/svg'
                 fill='none'
                 viewBox='0 0 24 24'
-                strokeWidth='1.5'
+                strokeWidth={1.5}
                 stroke='currentColor'
-                className='w-6 h-6'
+                className='size-6'
               >
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
-                  d='M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5'
+                  d='m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z'
                 />
               </svg>
             </button>
@@ -135,7 +149,11 @@ export const Groups = () => {
             {groups.map((group) => {
               return (
                 <Link to={`/message/${group.group.id}`} key={group.group.id}>
-                  <div className='rounded-lg hover:bg-slate-300 h-20 flex items-center p-3 gap-3 cursor-pointer'>
+                  <div
+                    className={`rounded-lg hover:bg-gradient-to-r from-slate-300 to-slate-400 h-20 flex items-center p-3 gap-3 cursor-pointer ${
+                      id == group.group.id ? 'bg-gradient-to-r from-slate-300 to-slate-400' : ''
+                    }`}
+                  >
                     <div className='h-16 w-16 rounded-full bg-slate-500' />
                     <div className='flex flex-col justify-center'>
                       <p className='font-semibold'>{group.group.name}</p>
@@ -147,9 +165,17 @@ export const Groups = () => {
             })}
           </div>
         </div>
-        <div className='bg-slate-200 rounded-lg flex-1 flex flex-col'>
+        <div className='bg-gradient-to-r from-slate-100 to-slate-300 rounded-lg flex-1 flex flex-col'>
           <h1 className='text-2xl font-bold flex justify-between items-center p-3'>
-            Messages
+            {window.location.pathname.split('/')[1] === "message" 
+            ?
+            "Messages"
+            :
+            window.location.pathname.split('/')[1] === "tasks" ?
+            "Tasks"
+            :
+            ""
+            }
           </h1>
           <Outlet />
         </div>

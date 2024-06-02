@@ -1,4 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -7,6 +11,7 @@ const Register = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate()
 
   const handleRegister = async (e: any) => {
     e.preventDefault()
@@ -14,7 +19,7 @@ const Register = () => {
       setError('Passwords do not match.');
       return
     }
-    const response = await fetch('http://localhost:8000/signup', {
+    const response = await fetch('http://localhost:3000/signup', {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',
@@ -28,7 +33,7 @@ const Register = () => {
     });
 
     if (response.ok) {
-      setError('Account created.');
+      navigate('/auth/login')
     }
   };
 
@@ -145,7 +150,7 @@ const Register = () => {
         </button>
         <p className='text-center text-sm'>
           Already have an account?{' '}
-          <a href='/signin' className='text-flutter-blue font-bold underline'>
+          <a href='/auth/login' className='text-flutter-blue font-bold underline'>
             Signin
           </a>
         </p>

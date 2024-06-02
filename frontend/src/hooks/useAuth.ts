@@ -4,7 +4,6 @@ import { useLocalStorage } from "./useLocalStorage";
 import jwt from 'jsonwebtoken'
 
 export const useAuth = () => {
-  // we can re export the user methods or object from this hook
   const { user, addUser, removeUser, setUser } = useUser();
   const { getItem } = useLocalStorage();
 
@@ -49,6 +48,7 @@ export const useAuth = () => {
         refreshToken: tokenData.refresh,
         accessToken: tokenData.access
       })
+      window.location.href = "/"
     }
   };
 

@@ -10,7 +10,7 @@ const createTask = async (req: Request, res: Response) => {
         groupId: data.groupId,
         title: data.title,
         description: data.description,
-        status: 'PENDING',
+        status: data.status,
       },
     });
 

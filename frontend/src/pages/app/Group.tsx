@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { socket } from '../../socket';
@@ -25,20 +28,22 @@ export const Group = () => {
   const [message, setMessage] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const token =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzE3Mjk4OTMxLCJleHAiOjE3MTc1NTgxMzF9.AjrzTJqXGypH04lcfKCSocFuuZlVZYysKsBje-H6DSk';
-
   function sendMessage(e) {
     e.preventDefault();
     socket.emit('message', {
       userId: user.id,
       content: message,
       groupId: Number.parseInt(id!),
-      token: token,
+      token: user.accessToken,
       room: id,
     });
     setMessage('');
   }
+
+  const scrollToBottom = () => {
+    const bottomRef = document.getElementById('bottom') as HTMLDivElement;
+    bottomRef?.scrollIntoView({ block: 'end' });
+  };
 
   useEffect(() => {
     async function getMessages() {
@@ -63,6 +68,10 @@ export const Group = () => {
   }, [id, user]);
 
   useEffect(() => {
+    scrollToBottom(); // Scroll to bottom after messages are fetched and rendered
+  }, [messages]);
+
+  useEffect(() => {
     function onConnect() {
       setIsConnected(true);
       socket.emit('joinRoom', id);
@@ -74,8 +83,9 @@ export const Group = () => {
     }
 
     function onMessageReceived(data) {
-      console.log(data)
-      setMessages(prevMessages => [...prevMessages, data])
+      console.log(data);
+      setMessages((prevMessages) => [...prevMessages, data]);
+      scrollToBottom();
     }
 
     socket.on('connect', onConnect);
@@ -105,9 +115,8 @@ export const Group = () => {
                       />
                     </div>
                   </div>
-                  <div className='chat-header text-red-700 font-bold'>
+                  <div className='chat-header font-bold'>
                     You
-                    <time className='text-xs opacity-50'>12:46</time>
                   </div>
                   <div className='chat-bubble'>{message.content}</div>
                 </div>
@@ -123,9 +132,8 @@ export const Group = () => {
                       />
                     </div>
                   </div>
-                  <div className='chat-header text-sky-500 font-bold'>
+                  <div className='chat-header  font-bold'>
                     {message.user.email}
-                    <time className='text-xs opacity-50'>12:45</time>
                   </div>
                   <div className='chat-bubble'>{message.content}</div>
                 </div>

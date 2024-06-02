@@ -6,21 +6,10 @@ import { useEffect, useState } from 'react';
 import Card from '../../components/Card';
 import { useParams } from 'react-router-dom';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { socket } from '../../socket';
+
 export const Tasks = () => {
   const [user, setUser] = useState('');
-  const [newTaskStatus, setNewTaskStatus] = useState('To do');
-  const [isConnected, setIsConnected] = useState(socket.connected);
-  const { getItem } = useLocalStorage();
-
-  useEffect(() => {
-    const user = getItem('user');
-    if (user) {
-      setUser(JSON.parse(user));
-    }
-  }, []);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [selectedTask, setSelectedTask] = useState({});
   const [tasks, setTasks] = useState([
     {
       id: '1',
@@ -38,7 +27,18 @@ export const Tasks = () => {
       tasks: [],
     },
   ]);
+
+  const { getItem } = useLocalStorage();
   const { id } = useParams();
+
+  useEffect(() => {
+    const user = getItem('user');
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+  }, []);
+
+
   const onDragEnd = async (result) => {
     if (!result.destination) return;
     const { source, destination } = result;
@@ -58,8 +58,7 @@ export const Tasks = () => {
       const destinationTask = [...destinationCol.tasks];
 
       const [removed] = sourceTask.splice(source.index, 1);
-      console.log(removed);
-      console.log(tasks[destinationColIndex].title);
+
       destinationTask.splice(destination.index, 0, removed);
       tasks[sourceColIndex].tasks = sourceTask;
       tasks[destinationColIndex].tasks = destinationTask;
@@ -83,9 +82,6 @@ export const Tasks = () => {
         }),
       });
 
-      if (response.ok) {
-        console.log('success');
-      }
     } else {
       const sourceColIndex = tasks.findIndex(
         (e) => e.id === source.droppableId
@@ -113,13 +109,6 @@ export const Tasks = () => {
   }
 
   async function createTask() {
-    let s = 'PENDING';
-    if (newTaskStatus.includes('In progress')) {
-      s = 'IN_PROGRESS';
-    } else if (newTaskStatus.includes('Completed')) {
-      s = 'COMPLETED';
-    }
-
     const response = await fetch('http://localhost:3000/task/', {
       method: 'POST',
       headers: {
@@ -129,9 +118,9 @@ export const Tasks = () => {
       body: JSON.stringify({
         userId: user.id,
         groupId: Number.parseInt(id),
-        title: title,
-        description: description,
-        status: s,
+        title: selectedTask.title,
+        description: selectedTask.description,
+        status: selectedTask.status,
       }),
     });
 
@@ -141,6 +130,26 @@ export const Tasks = () => {
     }
     console.log(response);
   }
+
+  async function updateTask() {
+    const response = await fetch(`http://localhost:3000/task/${selectedTask.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-type': 'application/json',
+        Authorization: `Bearer ${user.accessToken}`,
+      },
+      body: JSON.stringify({
+        title: selectedTask.title,
+        description: selectedTask.description,
+      }),
+    });
+
+    if (response.ok) {
+      window.location.href = `/tasks/${id}`;
+    }
+  }
+
+
 
   useEffect(() => {
     async function getTasks() {
@@ -152,8 +161,6 @@ export const Tasks = () => {
       });
 
       const data = await response.json();
-      console.log('here');
-      console.log(data);
       if (response.ok) {
         const newTasks = tasks.map((column) => ({
           ...column,
@@ -168,7 +175,6 @@ export const Tasks = () => {
           }),
         }));
         setTasks(newTasks);
-        console.log(newTasks);
       }
     }
     if (user) {
@@ -176,17 +182,8 @@ export const Tasks = () => {
     }
   }, [id, user]);
 
+
   useEffect(() => {
-    function onConnect() {
-      setIsConnected(true);
-      socket.emit('joinBoard', id);
-    }
-
-    function onDisconnect() {
-      setIsConnected(false);
-      socket.emit('leaveBoard', id);
-    }
-
     function onTaskChange(data) {
       setTasks((prevTasks) => {
         const updatedTasks = prevTasks.map((column) => {
@@ -206,35 +203,7 @@ export const Tasks = () => {
         });
         return updatedTasks;
       });
-      setTasks((prevTasks) => {
-        const updatedTasks = prevTasks.map((column) => {
-          if (column.id === data.sourceColId) {
-            return {
-              ...column,
-              tasks: column.tasks.filter((task) => task.id !== data.task.id),
-            };
-          }
-          if (column.id === data.destinationColId) {
-            return {
-              ...column,
-              tasks: [...column.tasks, data.task],
-            };
-          }
-          return column;
-        });
-        return updatedTasks;
-      });
     }
-
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
-    socket.on('onTaskChange', onTaskChange);
-
-    return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
-      socket.off('receivedMessage', onTaskChange);
-    };
   }, [id]);
 
   return (
@@ -252,7 +221,15 @@ export const Tasks = () => {
                   <div>{section.title}</div>
                   <button
                     onClick={() => {
-                      setNewTaskStatus(section.title);
+                      let s = 'PENDING';
+                    if (section.title.includes('In progress')) {
+                      s = 'IN_PROGRESS';
+                    } else if (section.title.includes('Completed')) {
+                      s = 'COMPLETED';
+                    }
+
+                      setSelectedTask({status: s});
+
                       document.getElementById('my_modal_2').showModal();
                     }}
                   >
@@ -266,7 +243,8 @@ export const Tasks = () => {
                       draggableId={`${task.id}`}
                       index={index}
                     >
-                      {(provided, snapshot) => (
+                      {
+                      (provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
@@ -293,11 +271,10 @@ export const Tasks = () => {
                               </div>
                               <div className='flex gap-2'>
                                 <button
-                                  onClick={() =>
-                                    document
-                                      .getElementById('update_task')
-                                      .showModal()
-                                  }
+                                  onClick={() => {
+                                    setSelectedTask(task);
+                                    document.getElementById('update_task').showModal()
+                                  }}
                                 >
                                   <svg
                                     xmlns='http://www.w3.org/2000/svg'
@@ -349,16 +326,22 @@ export const Tasks = () => {
           <h3 className='font-bold text-lg'>Enter task information</h3>
           <input
             type='text'
-            placeholder='Type here'
+            placeholder='Type the title here'
             className='input input-bordered w-full'
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={selectedTask?.title || ''}
+            onChange={(e) =>  setSelectedTask(prevTask => ({
+              ...prevTask,
+              title: e.target.value,
+            }))}
           />
           <textarea
-            placeholder='Type here'
+            placeholder='Type the description here'
             className='input input-bordered w-full h-32'
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={selectedTask?.description || ''}
+            onChange={(e) => setSelectedTask(prevTask => ({
+              ...prevTask,
+              description: e.target.value,
+            }))}
           />
           <button className='btn btn-primary w-full' onClick={createTask}>
             Add
@@ -370,9 +353,28 @@ export const Tasks = () => {
       </dialog>
       {/* Mao ni paras update */}
       <dialog id='update_task' className='modal'>
-        <div className='modal-box'>
-          <h3 className='font-bold text-lg'>Hello!</h3>
-          <p className='py-4'>Press ESC key or click outside to close</p>
+        <div className='modal-box flex items-center flex-col gap-3 w-[400px]'>
+          <h3 className='font-bold text-lg'>Update task information</h3>
+          <input
+            type='text'
+            className='input input-bordered w-full'
+            value={selectedTask?.title || ''}
+            onChange={(e) =>  setSelectedTask(prevTask => ({
+              ...prevTask,
+              title: e.target.value,
+            }))}
+          />
+          <textarea
+            className='input input-bordered w-full h-32'
+            value={selectedTask?.description || ''}
+            onChange={(e) => setSelectedTask(prevTask => ({
+              ...prevTask,
+              description: e.target.value,
+            }))}
+          />
+          <button className='btn btn-primary w-full' onClick={updateTask}>
+            Update
+          </button>
         </div>
         <form method='dialog' className='modal-backdrop'>
           <button>close</button>

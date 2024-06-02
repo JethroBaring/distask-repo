@@ -4,6 +4,23 @@ import { Request, Response } from 'express';
 const createTask = async (req: Request, res: Response) => {
   try {
     const data = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: { id: data.userId },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+
+    const group = await prisma.group.findUnique({
+      where: { id: data.groupId },
+    });
+
+    if (!group) {
+      return res.status(400).json({ error: 'Group not found' });
+    }
+
     const task = await prisma.task.create({
       data: {
         userId: data.userId,
@@ -66,11 +83,26 @@ const updateTaskById = async (req: Request, res: Response) => {
       },
     });
 
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    
+    const updateData: any = {};
+
+    if (body.status !== undefined) {
+      updateData.status = body.status;
+    }
+    if (body.title !== undefined) {
+      updateData.title = body.title;
+    }
+    if (body.description !== undefined) {
+      updateData.description = body.description;
+    }
+
+
     if (task !== null) {
       const task = await prisma.task.update({
-        data: {
-          status: body.status,
-        },
+        data: updateData,
         where: {
           id: Number.parseInt(data.taskId),
         },

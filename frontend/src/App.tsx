@@ -23,8 +23,8 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <AuthProvider>
+    <AuthProvider>
+      <BrowserRouter>
         <Routes>
           <Route path='/auth' element={<AuthLayout />}>
             <Route path='login' element={<Login />} />
@@ -40,8 +40,8 @@ function App() {
             <Route path='/' element={<Landing />} />
           )}
         </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

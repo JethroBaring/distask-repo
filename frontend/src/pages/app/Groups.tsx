@@ -5,8 +5,10 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { useAuth } from '../../hooks/useAuth';
 
 export const Groups = () => {
+  const { logout } = useAuth();
   const [user, setUser] = useState('');
   const [search, setSearch] = useState('');
   const { getItem } = useLocalStorage();
@@ -83,7 +85,7 @@ export const Groups = () => {
       if (response.ok) {
         setGroups(data.results);
         setG(data.results);
-        console.log(data.results)
+        console.log(data.results);
       }
     }
     if (user.id) {
@@ -99,7 +101,28 @@ export const Groups = () => {
             <h1 className='text-2xl p-3 font-bold justify-between items-center'>
               Groups
             </h1>
-            <div className='flex gap-2 p-3'>
+            <div className='flex gap-2 p-3 items-center justify-center'>
+              <Link to={'/auth/login'}>
+                <button
+                  onClick={logout}
+                  className='flex items-center justify-center'
+                >
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    strokeWidth={1.5}
+                    stroke='currentColor'
+                    className='size-6'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      d='M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75'
+                    />
+                  </svg>
+                </button>
+              </Link>
               <button
                 onClick={() =>
                   document.getElementById('choices_modal').showModal()
@@ -120,26 +143,6 @@ export const Groups = () => {
                   />
                 </svg>
               </button>
-              {/* <button
-                onClick={() =>
-                  document.getElementById('choices_modal').showModal()
-                }
-              >
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  fill='none'
-                  viewBox='0 0 24 24'
-                  strokeWidth={1.5}
-                  stroke='currentColor'
-                  className='size-6'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    d='M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'
-                  />
-                </svg>
-              </button> */}
             </div>
           </div>
           <form
@@ -182,7 +185,8 @@ export const Groups = () => {
                     }`}
                   >
                     <div className='h-16 w-16 rounded-full bg-slate-500 flex items-center justify-center text-2xl text-white'>
-                      {group.group.name.charAt(0).toUpperCase()}{group.group.name.charAt(1)}
+                      {group.group.name.charAt(0).toUpperCase()}
+                      {group.group.name.charAt(1)}
                     </div>
                     <div className='flex flex-col justify-center'>
                       <p className='font-semibold'>{group.group.name}</p>

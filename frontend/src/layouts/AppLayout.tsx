@@ -1,12 +1,9 @@
-import Landing from "../components/Landing";
+import Landing from '../components/Landing';
+import { useAuth } from '../hooks/useAuth';
 
 const AppLayout = () => {
+  const { user } = useAuth();
+  return <>{user ? <div></div> : <Landing />}</>;
+};
 
-    return (
-        <>
-            <Landing />
-        </>
-    )
-}
-
-export default AppLayout
+export default AppLayout;

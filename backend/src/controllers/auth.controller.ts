@@ -42,13 +42,12 @@ const signup = async (req: Request, res: Response) => {
         data: {
           email: data.email,
           password: hashedPassword,
-          groupMembership: {
-            create: [
-              {
-                groupId: 1,
-              }
-            ],
-          },
+          profile: {
+            create: {
+              firstName: data.firstName,
+              lastName: data.lastName
+            }
+          }
         },
       });
 
@@ -78,7 +77,7 @@ const refresh = async (req: Request, res: Response) => {
     };
 
     const access = jwt.sign({ id: decoded.id }, "distask", {
-      expiresIn: '1h',
+      expiresIn: '7d',
     });
 
     return res.status(200).json({

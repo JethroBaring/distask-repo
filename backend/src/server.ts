@@ -12,7 +12,13 @@ import cookieParser from 'cookie-parser'
 
 const app = express();
 const { io, server } = createSocketServer(app)
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:5173', // Allow requests from this origin
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser())
 app.use('/', authRouter);
@@ -25,6 +31,6 @@ app.use('/', guildRequestRouter)
 
 socketEvents(io)
 
-server.listen(8000, () => {
-  console.log(`listening on port 8000`);
+server.listen(3000, () => {
+  console.log(`listening on port 3000`);
 });

@@ -1,13 +1,12 @@
 import prisma from '../utils/db';
 import { Request, Response } from 'express';
-import { Status } from '@prisma/client';
 
 const getRequestByGroup = async (req: Request, res: Response) => {
   try {
     const params = req.params;
     const requests = await prisma.groupRequest.findMany({
       where: {
-        status: Status.PENDING,
+        status: "PENDING",
         groupId: Number.parseInt(params.id),
       },
       include: {

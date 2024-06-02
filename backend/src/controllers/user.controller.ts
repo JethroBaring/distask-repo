@@ -25,6 +25,12 @@ const getUserById = async (req: Request, res: Response) => {
       id: true,
       email: true,
       createdAt: true,
+      profile: {
+        select: {
+          firstName: true,
+          lastName: true
+        }
+      }
     },
   });
   if (!user) return res.status(400).json({ message: 'User not found' });

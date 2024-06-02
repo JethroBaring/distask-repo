@@ -21,6 +21,36 @@ const socketEvents = (io: Server) => {
       const response = await fetch('http://localhost:3000/message/', {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${message.token}`,
+        },
+        body: JSON.stringify({
+          content: message.content,
+          userId: message.userId,
+          groupId: message.groupId,
+        }),
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        io.to(message.room).emit('receivedMessage', data);
+      }
+    });
+
+    socket.on('joinBoard', (boardName) => {
+      socket.join(boardName);
+      console.log('Board ', boardName);
+    });
+
+    socket.on('leaveBoard', (boardName) => {
+      socket.leave(boardName);
+      console.log('User left ', boardName);
+    });
+
+    socket.on('task', async (message) => {
+      const response = await fetch('http://localhost:3000/message/', {
+        method: 'POST',
+        headers: {
           'Content-type': 'application/json',
           Authorization: `Bearer ${message.token}`,
         },
@@ -37,6 +67,7 @@ const socketEvents = (io: Server) => {
         io.to(message.room).emit('message', data);
       }
     });
+
   });
 };
 

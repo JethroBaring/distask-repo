@@ -1,4 +1,3 @@
-import { Permission, Role, Status } from '@prisma/client';
 import prisma from '../utils/db';
 import { Request, Response } from 'express';
 
@@ -15,22 +14,7 @@ const createGroup = async (req: Request, res: Response) => {
           create: [
             {
               userId: Number.parseInt(data.creator),
-              role: Role.CREATOR,
-            },
-          ],
-        },
-        channel: {
-          create: [
-            {
-              name: 'General',
-              channelPermission: {
-                create: [
-                  {
-                    userId: Number.parseInt(data.creator),
-                    permission: Permission.READ_WRITE,
-                  },
-                ],
-              },
+              role: "CREATOR",
             },
           ],
         },
@@ -60,7 +44,6 @@ const getGroupsByUser = async (req: Request, res: Response) => {
           select: {
             id: true,
             name: true,
-            channel: true
           }
         }
       },
@@ -98,7 +81,7 @@ const joinGroup = async (req: Request, res: Response) => {
       data: {
         userId: Number.parseInt(data.userId),
         groupId: Number.parseInt(data.guildId),
-        status: Status.PENDING,
+        status: "PENDING",
       },
     });
     if (!world)
@@ -119,7 +102,7 @@ const acceptGroupRequest = async (req: Request, res: Response) => {
         userId_groupId: { userId, groupId },
       },
       data: {
-        status: Status.ACCEPTED,
+        status: "ACCEPTED",
       },
     });
 
@@ -128,7 +111,7 @@ const acceptGroupRequest = async (req: Request, res: Response) => {
         data: {
           groupId,
           userId,
-          role: Role.MEMBER,
+          role: "MEMBER",
         },
       });
 
@@ -152,7 +135,7 @@ const rejectGroupRequest = async (req: Request, res: Response) => {
         userId_groupId: { userId, groupId },
       },
       data: {
-        status: Status.REJECTED,
+        status: "REJECTED",
       },
     });
 

@@ -364,7 +364,7 @@ export const Groups = () => {
               </div>
             </div>
             <div
-              className='btn bg-red-500 text-white'
+              className='btn bg-red-500 hover:bg-red-600 text-white'
               onClick={() => document.getElementById('leave_modal').showModal()}
             >
               Leave Group
@@ -436,9 +436,9 @@ export const Groups = () => {
           <h3 className='font-bold text-lg'>Leave Group</h3>
           <p>Are you sure you want to leave this group?</p>
           <div className='flex gap-3'>
-            <button className='btn btn-primary' onClick={leaveGroup}>Leave</button>
+            <button className='btn bg-red-500 hover:bg-red-600 text-white' onClick={leaveGroup}>Leave</button>
             <button
-              className='btn btn-secondary'
+              className='btn bg-slate-400 text-white hover:bg-slate-500'
               onClick={() => document.getElementById('leave_modal').close()}
             >
               Cancel

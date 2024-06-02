@@ -108,16 +108,13 @@ export const Group = () => {
               return (
                 <div className='chat chat-end' key={message.id}>
                   <div className='chat-image avatar'>
-                    <div className='w-10 rounded-full'>
-                      <img
-                        alt='Tailwind CSS chat bubble component'
-                        src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVA_HrQLjkHiJ2Ag5RGuwbFeDKRLfldnDasw&s'
-                      />
+                    <div class='avatar placeholder'>
+                      <div class='bg-slate-400 text-neutral-content rounded-full w-11'>
+                        <span class='text-xl'>AI</span>
+                      </div>
                     </div>
                   </div>
-                  <div className='chat-header font-bold'>
-                    You
-                  </div>
+                  <div className='chat-header font-bold'>You</div>
                   <div className='chat-bubble'>{message.content}</div>
                 </div>
               );
@@ -125,11 +122,10 @@ export const Group = () => {
               return (
                 <div className='chat chat-start' key={message.id}>
                   <div className='chat-image avatar'>
-                    <div className='w-10 rounded-full'>
-                      <img
-                        alt='Tailwind CSS chat bubble component'
-                        src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVA_HrQLjkHiJ2Ag5RGuwbFeDKRLfldnDasw&s'
-                      />
+                    <div class='avatar placeholder'>
+                      <div class='bg-slate-400 text-neutral-content rounded-full w-11'>
+                        <span class='text-xl'>AI</span>
+                      </div>
                     </div>
                   </div>
                   <div className='chat-header  font-bold'>
@@ -150,7 +146,7 @@ export const Group = () => {
       >
         <input
           type='text'
-          className='input w-full'
+          className='input w-full '
           onChange={(e) => setMessage(e.target.value)}
           value={message}
         />

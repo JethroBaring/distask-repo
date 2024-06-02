@@ -15,10 +15,11 @@ const { io, server } = createSocketServer(app);
 const corsOptions = {
   origin: 'http://localhost:5173', // Allow requests from this origin
   methods: ['GET', 'POST', 'PATCH'],
-  allowedHeaders: ['Authorization', 'Content-Type'],
+  allowedHeaders: ['Authorization', 'Content-type'],
   credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 };
 app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(cookieParser());
 app.use('/', authRouter);

@@ -4,8 +4,6 @@ import { Request, Response } from 'express';
 const createGroup = async (req: Request, res: Response) => {
   try {
     const data = req.body;
-    console.log(data);
-    console.log('Hello create guild');
     const guild = await prisma.group.create({
       data: {
         name: data.name,

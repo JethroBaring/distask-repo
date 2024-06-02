@@ -1,4 +1,3 @@
-import path from "path"
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -14,7 +13,6 @@ export default defineConfig({
       'util': 'util',
       'process': 'process/browser',
       'stream': 'stream-browserify',
-      "@": path.resolve(__dirname, "./src"),
     }
   }
 })

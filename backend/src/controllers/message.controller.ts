@@ -46,29 +46,37 @@ const getMessagesByGuildId = async (req: Request, res: Response) => {
     const params = req.params;
     const messages = await prisma.message.findMany({
       where: {
-        groupId: Number.parseInt(params.groupId),
+        groupId: Number.parseInt(params.groupId)
       },
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            groupMembership: {
-              where: {
-                groupId: Number.parseInt(params.guildId),
-              },
-              select: {
-                role: true,
-                nickname: true,
-              },
-            },
-          },
-        },
-      },
-    });
+      include: {
+        user: true
+      }
+    })
+    // const messages = await prisma.message.findMany({
+    //   where: {
+    //     groupId: Number.parseInt(params.groupId),
+    //   },
+    //   select: {
+    //     id: true,
+    //     content: true,
+    //     createdAt: true,
+    //     user: {
+    //       select: {
+    //         id: true,
+    //         email: true,
+    //         groupMembership: {
+    //           where: {
+    //             groupId: Number.parseInt(params.guildId),
+    //           },
+    //           select: {
+    //             role: true,
+    //             nickname: true,
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    // });
 
     if (!messages) return res.status(400).json({ message: 'error' });
 

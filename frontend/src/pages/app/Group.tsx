@@ -10,22 +10,10 @@ type Message = {
 };
 
 export const Group = () => {
-  const { user } = useAuth();
   const { id } = useParams();
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [message, setMessage] = useState<string>('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      content: 'tests',
-      user: { id: 1, email: 'sample@gmail.com' },
-    },
-    {
-      id: 2,
-      content: 'Hello',
-      user: { id: 2, email: 'test@gmail.com' },
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzE3Mjk4OTMxLCJleHAiOjE3MTc1NTgxMzF9.AjrzTJqXGypH04lcfKCSocFuuZlVZYysKsBje-H6DSk'
 
@@ -43,9 +31,23 @@ export const Group = () => {
   
   useEffect(() => {
     async function getMessages() {
-      const response = await fetch('http://localhost:3000/messaegs')
+      const response = await fetch(`http://localhost:3000/messages/${id}`, {
+        method: 'get',
+        headers: {
+          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzE3MzEzMDY4LCJleHAiOjE3MTc1NzIyNjh9.bYiQNXhP7RqzYODmmq-F8mczpR5GGp8Rf4eCKeJDIFo`
+        }
+      })
+
+      const data = await response.json()
+
+      if(response.ok) {
+        console.log(data)
+        setMessages(data)
+      }
     }
-  }, [])
+
+    getMessages()
+  }, [id])
 
 
   useEffect(() => {
@@ -78,7 +80,6 @@ export const Group = () => {
   return (
     <>
       <div className='flex-1 overflow-scroll p-3'>
-        <p>State {'' + isConnected}</p>
         <div className='h-0'>
           {messages.map((message: Message) => {
             if (message.user.id === 2) {

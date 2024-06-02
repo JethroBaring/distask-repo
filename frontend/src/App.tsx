@@ -2,28 +2,16 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import AuthLayout from './layouts/AuthLayout';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import AppLayout from './layouts/AppLayout';
-import { AuthContext } from './context/AuthContext';
-import { useAuth } from './hooks/useAuth';
-import { useEffect } from 'react';
 import { Group } from './pages/app/Group';
 import { Groups } from './pages/app/Groups';
 import { Default } from './pages/app/Default';
 import { Tasks } from './pages/app/Tasks';
+import AuthProvider from './context/AuthProvider';
 
 function App() {
-  const { user, login, logout, setUser } = useAuth();
-
-  useEffect(() => {
-    console.log(user);
-
-    // if(user) {
-    // window.location.href = "https://www.facebook.com"
-    // }
-  }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthProvider>
       <BrowserRouter>
         <Routes>
           <Route path='/auth' element={<AuthLayout />}>
@@ -37,7 +25,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-    </AuthContext.Provider>
+    </AuthProvider>
   );
 }
 

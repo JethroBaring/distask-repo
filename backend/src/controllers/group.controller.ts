@@ -14,7 +14,7 @@ const createGroup = async (req: Request, res: Response) => {
           create: [
             {
               userId: Number.parseInt(data.creator),
-              role: "CREATOR",
+              role: 'CREATOR',
             },
           ],
         },
@@ -44,8 +44,8 @@ const getGroupsByUser = async (req: Request, res: Response) => {
           select: {
             id: true,
             name: true,
-          }
-        }
+          },
+        },
       },
     });
 
@@ -75,75 +75,33 @@ const getGroupById = async (req: Request, res: Response) => {
 
 const joinGroup = async (req: Request, res: Response) => {
   try {
+
     const data = req.body;
 
-    const world = await prisma.groupRequest.create({
-      data: {
-        userId: Number.parseInt(data.userId),
-        groupId: Number.parseInt(data.guildId),
-        status: "PENDING",
-      },
-    });
-    if (!world)
-      return res.status(400).json({
-        message: 'Error',
-      });
-
-    return res.status(200).json(world);
-  } catch (error) {}
-};
-
-const acceptGroupRequest = async (req: Request, res: Response) => {
-  try {
-    const { userId, groupId } = req.body as { userId: number; groupId: number };
-
-    const request = await prisma.groupRequest.update({
+    const group = await prisma.group.findFirst({
       where: {
-        userId_groupId: { userId, groupId },
-      },
-      data: {
-        status: "ACCEPTED",
-      },
-    });
+        id: data.groupId
+      }
+    })
 
-    if (request) {
+    if(group !== null) {
       const group = await prisma.groupMembership.create({
         data: {
-          groupId,
-          userId,
-          role: "MEMBER",
-        },
+          userId: data.userId,
+          groupId: data.groupId,
+          role: 'MEMBER'
+        }
       });
-
+  
       if (group) {
         return res.status(200).json(group);
       } else {
         return res.status(400).json(group);
       }
     } else {
-      return res.status(400).json({ message: 'Error' });
+      return res.status(400).json({error: "Group not found."})
     }
-  } catch (error) {}
-};
 
-const rejectGroupRequest = async (req: Request, res: Response) => {
-  try {
-    const { userId, groupId } = req.body as { userId: number; groupId: number };
-
-    const request = await prisma.groupRequest.update({
-      where: {
-        userId_groupId: { userId, groupId },
-      },
-      data: {
-        status: "REJECTED",
-      },
-    });
-
-    if (!request) return res.status(400).json({ message: 'Error' });
-
-    if (request) {
-      return res.status(200).json(request);
-    }
   } catch (error) {}
 };
 
@@ -151,7 +109,5 @@ export {
   createGroup,
   getGroupsByUser,
   getGroupById,
-  joinGroup,
-  acceptGroupRequest,
-  rejectGroupRequest,
+  joinGroup
 };

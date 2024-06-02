@@ -16,7 +16,7 @@ export const useUser = () => {
   const { user, setUser } = useContext(AuthContext);
   const { setItem } = useLocalStorage();
 
-  const addUser = (x: User) => {
+  const addUser = async (x: User) => {
     setUser(x);
     setItem("user", JSON.stringify(x));
   };

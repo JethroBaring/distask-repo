@@ -124,7 +124,7 @@ export const Tasks = () => {
 
     const data = await response.json();
     if (response.ok) {
-      console.log(data);
+      window.location.href = `/tasks/${id}`;
     }
     console.log(response);
   }
@@ -157,8 +157,9 @@ export const Tasks = () => {
         console.log(newTasks);
       }
     }
-
-    getTasks();
+    if (user) {
+      getTasks();
+    }
   }, [id, user]);
 
   useEffect(() => {

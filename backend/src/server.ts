@@ -14,7 +14,7 @@ const app = express();
 const { io, server } = createSocketServer(app);
 const corsOptions = {
   origin: 'http://localhost:5173', // Allow requests from this origin
-  methods: ['GET', 'POST', 'PATCH'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
   allowedHeaders: ['Authorization', 'Content-type'],
   credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 };

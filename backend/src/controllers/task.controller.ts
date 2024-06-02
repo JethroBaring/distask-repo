@@ -84,4 +84,31 @@ const updateTaskById = async (req: Request, res: Response) => {
   }
 };
 
-export { createTask, getTasksByGroupId, updateTaskById };
+const deleteTaskById = async (req: Request, res: Response) => {
+  try {
+    const data = req.params;
+    const task = await prisma.task.findFirst({
+      where: {
+        id: Number.parseInt(data.taskId),
+      },
+    });
+
+    if (task !== null) {
+      const task = await prisma.task.delete({
+        where: {
+          id: Number.parseInt(data.taskId),
+        },
+      });
+
+      if (task) {
+        return res.status(200).json(task);
+      } else {
+        return res.status(400).json(task);
+      }
+    }
+  } catch (error) {
+    return res.status(400).json({ error: 'Error' });
+  }
+};
+
+export { createTask, getTasksByGroupId, updateTaskById, deleteTaskById };

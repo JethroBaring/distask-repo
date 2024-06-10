@@ -5,6 +5,7 @@ import { emailExists } from '../utils/emailExists';
 import { createToken } from '../utils/jwt';
 import jwt from 'jsonwebtoken';
 // testing
+// testing 2
 const login = async (req: Request, res: Response) => {
   try {
     const data = req.body;
